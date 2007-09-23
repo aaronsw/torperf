@@ -1,0 +1,22 @@
+$Id$
+
+A set of utilities for testing Tor performance. Currently they are
+unfinished and not documented.
+
+Contents
+--------
+
+ trivsocks-client.c: Very simple HTTP client, which downloads a file
+  via SOCKS 4a/5 and outputs timing information
+ util.c: Utility functions for trivsocks-client.c
+ util.h: Utility function declarations for trivsocks-client.c
+ 
+ Makefile: Builds and tests trivsocks-client
+ 
+ run_test.py: Script to automate running of trivsocks-client
+ plot_results.R: Plot the results from run_test.py
+
+ LICENSE: The Tor license (3-clause BSD)
+ README: This file 
+
+Steven J. Murdoch <http://www.cl.cam.ac.uk/users/sjm217/>
