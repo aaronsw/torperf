@@ -105,9 +105,9 @@ parse_socks4a_connect_response(const char *response, size_t len,
     fprintf(stderr, "Nonzero port in socks response: bad format.\n");
     return -1;
   }
-  fprintf(stderr,"Port number: %d\n", get_uint16(response+2));
+  fprintf(stderr, "Port number: %u\n", (unsigned)get_uint16(response+2));
   if (status != 90) {
-    fprintf(stderr, "Got status response '%d': socks request failed.\n", status);
+    fprintf(stderr, "Got status response '%u': socks request failed.\n", (unsigned)status);
     return -1;
   }
 
@@ -162,7 +162,7 @@ parse_socks5_connect_response(const char *response, size_t len, int s,
     return -1;
   }
   port = ntohl(get_uint16(reply_buf));
-  fprintf(stderr,"Port number: %d\n", port);
+  fprintf(stderr,"Port number: %u\n", (unsigned)port);
   return 0;
 }
 
@@ -402,7 +402,7 @@ do_connect(const char *hostname, const char *filename, uint32_t sockshost, uint1
   print_time(dataresponsetime);
   print_time(datacompletetime);
 
-  printf("%d %d\n", write_bytes, read_bytes);
+  printf("%lu %lu\n", (unsigned long)write_bytes, (unsigned long)read_bytes);
   return 0;
 }
 
