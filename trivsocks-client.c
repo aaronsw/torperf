@@ -410,8 +410,7 @@ do_connect(const char *hostname, const char *filename, uint32_t sockshost, uint1
 static void
 usage(void)
 {
-  puts("Syntax: tor-resolve [-4] [-v] [-x] [-F] "
-       "hostname [sockshost:socksport]");
+  puts("Syntax: trivsocks-client hostname [sockshost:socksport] /path/to/file");
   exit(1);
 }
 
