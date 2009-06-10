@@ -1,0 +1,125 @@
+Measuring Tor's performance as users experience it
+==================================================
+
+The performance (latency and throughput) that Tor users experience depends
+on numerous factors and is subject of current research. In order to
+evaluate progress in improving Tor's performance, we need to continuously
+measure how fast Tor really is for our users. The primary purpose of these
+measurements is to compare how performance evolves over time. This howto
+uses a trivial SOCKS client to download files of various sizes over the Tor
+network and write down how long substeps take.
+
+The following configuration parameters are used:
+
+- 50 KB file, downloaded every 5 minutes, timeout of 4:55 minutes,
+  MaxCircuitDirtiness of 4 minutes, SOCKS port 9020, no entry guards
+- 1 MB file, downloaded every 30 minutes, timeout of 29:55 minutes, default
+  MaxCircuitDirtiness of 10 minutes, SOCKS port 9021, no entry guards
+- 5 MB file, downloaded every 60 minutes, timeout of 59:55 minutes, default
+  MaxCircuitDirtiness of 10 minutes, SOCKS port 9022, no entry guards
+
+Create sample files of correct sizes and make them available somewhere via
+http:
+
+$ dd if=/dev/urandom of=.50kbfile count=1 bs=50K
+$ dd if=/dev/urandom of=.1mbfile count=1 bs=1M
+$ dd if=/dev/urandom of=.5mbfile count=1 bs=5M
+
+These files are available as http://www.freehaven.net/~karsten/.50kbfile
+(and the other two file names). You may want to use your own files instead.
+
+Check out and build torperf:
+
+$ svn co https://tor-svn.freehaven.net/svn/torperf/trunk ~/torperf
+$ cd ~/torperf
+$ make
+
+Create data directories for the Tor clients (every download uses its own
+Tor client) and write torrc files:
+
+$ mkdir torclient50kb
+$ mkdir torclient1mb
+$ mkdir torclient5mb
+
+$ vim torclient50kb/torrc
+
+DataDirectory .
+SocksPort 9020
+MaxCircuitDirtiness 4 minutes
+UseEntryGuards 0
+RunAsDaemon 1
+
+$ vim torclient1mb/torrc
+
+DataDirectory .
+SocksPort 9021
+UseEntryGuards 0
+RunAsDaemon 1
+
+$ vim torclient5mb/torrc
+
+DataDirectory .
+SocksPort 9022
+UseEntryGuards 0
+RunAsDaemon 1
+
+Write a start script to start the Tor clients and execute it:
+
+$ vim start-tors
+
+#!/bin/bash
+cd ~/torperf/torclient50kb && tor -f ~/torperf/torclient50kb/torrc
+cd ~/torperf/torclient1mb && tor -f ~/torperf/torclient1mb/torrc
+cd ~/torperf/torclient5mb && tor -f ~/torperf/torclient5mb/torrc
+
+$ chmod a+x start-tors
+$ ./start-tors
+
+Install the timeout tool:
+
+$ sudo apt-get install timeout
+
+Add crontab entries to start the regular requests (line breaks are only for
+formatting purposes here):
+
+$ crontab -e
+
+*/5 * * * * timeout 295 ~/torperf/trivsocks-client www.freehaven.net
+  127.0.0.1:9020 /~karsten/perf/.50kbfile >> ~/torperf/50kb.data
+  2>/dev/null
+*/30 * * * * timeout 1795 ~/torperf/trivsocks-client www.freehaven.net
+  127.0.0.1:9021 /~karsten/perf/.1mbfile >> ~/torperf/1mb.data 2>/dev/null
+*/60 * * * * timeout 3595 ~/torperf/trivsocks-client www.freehaven.net
+  127.0.0.1:9022 /~karsten/perf/.5mbfile >> ~/torperf/5mb.data 2>/dev/null
+
+From now on, the three files 50kb.data, 1mb.data, and 5mb.data should
+accumulate lines like this (50kb.data shown here; line breaks are only for
+formatting purposes):
+
+1244638801 612981
+  1244638801 612991
+  1244638801 613051
+  1244638801 613126
+  1244638801 613134
+  1244638814 282441
+  1244638814 282466
+  1244638817 164531
+  1244638826 335235
+  84 51466
+
+The column headers might be:
+
+startsec startusec
+  socketsec socketusec
+  connectsec connectusec
+  negotiatesec negotiateusec
+  requestsec requestusec
+  responsesec responseusec
+  datarequestsec datarequestusec
+  dataresponsesec dataresponseusec
+  datacompletesec datacompleteusec
+  writebytes readbytes
+
+If everything works, you might want to let your system start these Tor
+clients on system startup.
+
