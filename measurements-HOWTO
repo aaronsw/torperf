@@ -2,7 +2,7 @@ Measuring Tor's performance as users experience it
 ==================================================
 
 The performance (latency and throughput) that Tor users experience depends
-on numerous factors and is subject of current research. In order to
+on numerous factors and is the subject of current research. In order to
 evaluate progress in improving Tor's performance, we need to continuously
 measure how fast Tor really is for our users. The primary purpose of these
 measurements is to compare how performance evolves over time. This howto
@@ -12,7 +12,7 @@ network and write down how long substeps take.
 The following configuration parameters are used:
 
 - 50 KB file, downloaded every 5 minutes, timeout of 4:55 minutes,
-  MaxCircuitDirtiness of 4 minutes, SOCKS port 9020, no entry guards
+  MaxCircuitDirtiness of 1 minute, SOCKS port 9020, no entry guards
 - 1 MB file, downloaded every 30 minutes, timeout of 29:55 minutes, default
   MaxCircuitDirtiness of 10 minutes, SOCKS port 9021, no entry guards
 - 5 MB file, downloaded every 60 minutes, timeout of 59:55 minutes, default
@@ -45,7 +45,7 @@ $ vim torclient50kb/torrc
 
 DataDirectory .
 SocksPort 9020
-MaxCircuitDirtiness 4 minutes
+MaxCircuitDirtiness 1 minute
 UseEntryGuards 0
 RunAsDaemon 1
 
