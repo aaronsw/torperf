@@ -87,12 +87,12 @@ formatting purposes here):
 
 $ crontab -e
 
-*/5 * * * * timeout 295 ~/torperf/trivsocks-client www.freehaven.net
+*/5 * * * * timeout -2 295 ~/torperf/trivsocks-client www.freehaven.net
   127.0.0.1:9020 /~karsten/perf/.50kbfile >> ~/torperf/50kb.data
   2>/dev/null
-*/30 * * * * timeout 1795 ~/torperf/trivsocks-client www.freehaven.net
+2,32 * * * * timeout -2 1795 ~/torperf/trivsocks-client www.freehaven.net
   127.0.0.1:9021 /~karsten/perf/.1mbfile >> ~/torperf/1mb.data 2>/dev/null
-*/60 * * * * timeout 3595 ~/torperf/trivsocks-client www.freehaven.net
+8 * * * * timeout -2 3595 ~/torperf/trivsocks-client www.freehaven.net
   127.0.0.1:9022 /~karsten/perf/.5mbfile >> ~/torperf/5mb.data 2>/dev/null
 
 From now on, the three files 50kb.data, 1mb.data, and 5mb.data should
