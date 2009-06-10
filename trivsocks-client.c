@@ -10,6 +10,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <assert.h>
+#include <signal.h>
 
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -252,6 +253,37 @@ print_time(struct timeval t) {
   return printf("%ld %ld ", t.tv_sec, t.tv_usec);
 }
 
+// Timestamps of important events
+struct timeval starttime; // Connection process started
+struct timeval sockettime; // After socket is created
+struct timeval connecttime; // After socket is connected
+struct timeval negotiatetime; // After authentication methods are negotiated (SOCKS 5 only)
+struct timeval requesttime; // After SOCKS request is sent
+struct timeval responsetime; // After SOCKS response is received
+struct timeval datarequesttime; // After HTTP request is written
+struct timeval dataresponsetime; // After first response is received
+struct timeval datacompletetime; // After payload is complete
+
+// Data counters of SOCKS payload
+size_t read_bytes;
+size_t write_bytes;
+
+static void
+output_status_information(void)
+{
+  print_time(starttime);
+  print_time(sockettime);
+  print_time(connecttime);
+  print_time(negotiatetime);
+  print_time(requesttime);
+  print_time(responsetime);
+  print_time(datarequesttime);
+  print_time(dataresponsetime);
+  print_time(datacompletetime);
+
+  printf("%lu %lu\n", (unsigned long)write_bytes, (unsigned long)read_bytes);
+}
+
 /** Send a resolve request for <b>hostname</b> to the Tor listening on
  * <b>sockshost</b>:<b>socksport</b>.  Store the resulting IPv4
  * address (in host order) into *<b>result_addr</b>.
@@ -261,21 +293,6 @@ do_connect(const char *hostname, const char *filename, uint32_t sockshost, uint1
 	   int reverse, int version,
            uint32_t *result_addr, char **result_hostname)
 {
-
-  // Timestamps of important events
-  struct timeval starttime; // Connection process started
-  struct timeval sockettime; // After socket is created
-  struct timeval connecttime; // After socket is connected
-  struct timeval negotiatetime; // After authentication methods are negotiated (SOCKS 5 only)
-  struct timeval requesttime; // After SOCKS request is sent
-  struct timeval responsetime; // After SOCKS response is received
-  struct timeval datarequesttime; // After HTTP request is written
-  struct timeval dataresponsetime; // After first response is received
-  struct timeval datacompletetime; // After payload is complete
-
-  // Data counters of SOCKS payload
-  size_t read_bytes;
-  size_t write_bytes;
 
   int s;
   struct sockaddr_in socksaddr;
@@ -392,17 +409,8 @@ do_connect(const char *hostname, const char *filename, uint32_t sockshost, uint1
 	      &datarequesttime, &dataresponsetime, &datacompletetime);
 
   // Output status information
-  print_time(starttime);
-  print_time(sockettime);
-  print_time(connecttime);
-  print_time(negotiatetime);
-  print_time(requesttime);
-  print_time(responsetime);
-  print_time(datarequesttime);
-  print_time(dataresponsetime);
-  print_time(datacompletetime);
+  output_status_information();
 
-  printf("%lu %lu\n", (unsigned long)write_bytes, (unsigned long)read_bytes);
   return 0;
 }
 
@@ -411,6 +419,15 @@ static void
 usage(void)
 {
   puts("Syntax: trivsocks-client hostname [sockshost:socksport] /path/to/file");
+  exit(1);
+}
+
+static void
+termination_handler(int signum)
+{
+  fprintf(stderr,"Received a timeout. Exiting.\n");
+  output_status_information();
+
   exit(1);
 }
 
@@ -426,6 +443,8 @@ main(int argc, char **argv)
   uint32_t result = 0;
   char *result_hostname = NULL;
   char *hostname = NULL, *filename = NULL;
+
+  signal(SIGINT, termination_handler);
 
   arg = &argv[1];
   n_args = argc-1;
