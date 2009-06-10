@@ -425,6 +425,7 @@ main(int argc, char **argv)
   int n_args;
   uint32_t result = 0;
   char *result_hostname = NULL;
+  char *hostname = NULL, *filename = NULL;
 
   arg = &argv[1];
   n_args = argc-1;
@@ -465,6 +466,8 @@ main(int argc, char **argv)
     fprintf(stderr,"defaulting to localhost:9050\n");
     sockshost = 0x7f000001u; /* localhost */
     socksport = 9050; /* 9050 */
+    hostname = arg[0];
+    filename = arg[1];
   } else if (n_args == 3) {
     if (parse_addr_port(0, arg[1], NULL, &sockshost, &socksport)<0) {
       fprintf(stderr, "Couldn't parse/resolve address %s\n", arg[1]);
@@ -474,11 +477,13 @@ main(int argc, char **argv)
       fprintf(stderr,"defaulting to port 9050\n");
       socksport = 9050;
     }
+    hostname = arg[0];
+    filename = arg[2];
   } else {
     usage();
   }
 
-  if (do_connect(arg[0], arg[1], sockshost, socksport,
+  if (do_connect(hostname, filename, sockshost, socksport,
                  isReverse, isSocks4 ? 4 : 5, &result,
                  &result_hostname))
     return 1;
