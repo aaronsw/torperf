@@ -48,6 +48,7 @@ SocksPort 9020
 MaxCircuitDirtiness 1 minute
 UseEntryGuards 0
 RunAsDaemon 1
+Log notice file log
 
 $ vim torclient1mb/torrc
 
@@ -55,6 +56,7 @@ DataDirectory .
 SocksPort 9021
 UseEntryGuards 0
 RunAsDaemon 1
+Log notice file log
 
 $ vim torclient5mb/torrc
 
@@ -62,6 +64,7 @@ DataDirectory .
 SocksPort 9022
 UseEntryGuards 0
 RunAsDaemon 1
+Log notice file log
 
 Write a start script to start the Tor clients and execute it:
 
