@@ -124,5 +124,10 @@ startsec startusec
   writebytes readbytes
 
 If everything works, you might want to let your system start these Tor
-clients on system startup.
+clients on system startup. On Debian, this can be done using a crontab
+entry, too:
+
+$ crontab -e
+
+@reboot ~/torperf/start-tors 2>/dev/null
 
