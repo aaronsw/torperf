@@ -25,8 +25,9 @@ $ dd if=/dev/urandom of=.50kbfile count=1 bs=50K
 $ dd if=/dev/urandom of=.1mbfile count=1 bs=1M
 $ dd if=/dev/urandom of=.5mbfile count=1 bs=5M
 
-These files are available as http://www.freehaven.net/~karsten/.50kbfile
-(and the other two file names). You may want to use your own files instead.
+These files are available as http://svn.torproject.org/.50kbfile (and the
+other two file names). You may use these files, or you can use your own
+files instead.
 
 Check out and build torperf:
 
@@ -87,13 +88,15 @@ formatting purposes here):
 
 $ crontab -e
 
-*/5 * * * * timeout -2 295 ~/torperf/trivsocks-client www.freehaven.net
-  127.0.0.1:9020 /~karsten/perf/.50kbfile >> ~/torperf/50kb.data
+*/5 * * * * timeout -2 295 ~/torperf/trivsocks-client
+  torperf.torproject.org 127.0.0.1:9020 /.50kbfile >> ~/torperf/50kb.data
   2>/dev/null
-2,32 * * * * timeout -2 1795 ~/torperf/trivsocks-client www.freehaven.net
-  127.0.0.1:9021 /~karsten/perf/.1mbfile >> ~/torperf/1mb.data 2>/dev/null
-8 * * * * timeout -2 3595 ~/torperf/trivsocks-client www.freehaven.net
-  127.0.0.1:9022 /~karsten/perf/.5mbfile >> ~/torperf/5mb.data 2>/dev/null
+2,32 * * * * timeout -2 1795 ~/torperf/trivsocks-client
+  torperf.torproject.org 127.0.0.1:9021 /.1mbfile >> ~/torperf/1mb.data
+  2>/dev/null
+8 * * * * timeout -2 3595 ~/torperf/trivsocks-client
+  torperf.torproject.org 127.0.0.1:9022 /.5mbfile >> ~/torperf/5mb.data
+  2>/dev/null
 
 From now on, the three files 50kb.data, 1mb.data, and 5mb.data should
 accumulate lines like this (50kb.data shown here; line breaks are only for
