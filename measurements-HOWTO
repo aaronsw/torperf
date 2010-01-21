@@ -25,9 +25,9 @@ $ dd if=/dev/urandom of=.50kbfile count=1 bs=50K
 $ dd if=/dev/urandom of=.1mbfile count=1 bs=1M
 $ dd if=/dev/urandom of=.5mbfile count=1 bs=5M
 
-These files are available as http://svn.torproject.org/.50kbfile (and the
-other two file names). You may use these files, or you can use your own
-files instead.
+These files are available as http://torperf.torproject.org/.50kbfile (and
+the other two file names). You may use these files, or you can use your
+own files instead.
 
 Check out and build torperf:
 
