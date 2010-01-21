@@ -30,7 +30,7 @@ These files are available as http://www.freehaven.net/~karsten/.50kbfile
 
 Check out and build torperf:
 
-$ svn co https://tor-svn.freehaven.net/svn/torperf/trunk ~/torperf
+$ svn co https://svn.torproject.org/svn/torperf/trunk ~/torperf
 $ cd ~/torperf
 $ make
 
