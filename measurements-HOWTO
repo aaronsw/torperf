@@ -42,39 +42,39 @@ $ mkdir torclient50kb
 $ mkdir torclient1mb
 $ mkdir torclient5mb
 
-$ vim torclient50kb/torrc
-
+$ cat <<EOF >> torclient50kb/torrc
 DataDirectory .
 SocksPort 9020
 MaxCircuitDirtiness 1 minute
 UseEntryGuards 0
 RunAsDaemon 1
 Log notice file log
+EOF
 
-$ vim torclient1mb/torrc
-
+$ cat <<EOF >> torclient1mb/torrc
 DataDirectory .
 SocksPort 9021
 UseEntryGuards 0
 RunAsDaemon 1
 Log notice file log
+EOF
 
-$ vim torclient5mb/torrc
-
+$ cat <<EOF >> torclient5mb/torrc
 DataDirectory .
 SocksPort 9022
 UseEntryGuards 0
 RunAsDaemon 1
 Log notice file log
+EOF
 
 Write a start script to start the Tor clients and execute it:
 
-$ vim start-tors
-
+$ cat <<EOF >> start-tors
 #!/bin/bash
 cd ~/torperf/torclient50kb && tor -f ~/torperf/torclient50kb/torrc
 cd ~/torperf/torclient1mb && tor -f ~/torperf/torclient1mb/torrc
 cd ~/torperf/torclient5mb && tor -f ~/torperf/torclient5mb/torrc
+EOF
 
 $ chmod a+x start-tors
 $ ./start-tors
