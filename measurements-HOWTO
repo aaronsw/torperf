@@ -49,6 +49,8 @@ MaxCircuitDirtiness 1 minute
 UseEntryGuards 0
 RunAsDaemon 1
 Log notice file log
+ControlPort 10020
+CookieAuthentication 1
 EOF
 
 $ cat <<EOF >> torclient1mb/torrc
@@ -57,6 +59,8 @@ SocksPort 9021
 UseEntryGuards 0
 RunAsDaemon 1
 Log notice file log
+ControlPort 10021
+CookieAuthentication 1
 EOF
 
 $ cat <<EOF >> torclient5mb/torrc
@@ -65,15 +69,29 @@ SocksPort 9022
 UseEntryGuards 0
 RunAsDaemon 1
 Log notice file log
+ControlPort 10022
+CookieAuthentication 1
 EOF
 
-Write a start script to start the Tor clients and execute it:
+ControlPort is configured so that we can attach a small controller
+that is used to write additional statistics about the chosen paths
+
+Now we need to get TorCtl:
+
+$ git clone git://git.torproject.org/pytorctl TorCtl
+
+Write a start script to start the Tor clients and the controllers,
+and execute it:
 
 $ cat <<EOF >> start-tors
 #!/bin/bash
 cd ~/torperf/torclient50kb && tor -f ~/torperf/torclient50kb/torrc
 cd ~/torperf/torclient1mb && tor -f ~/torperf/torclient1mb/torrc
 cd ~/torperf/torclient5mb && tor -f ~/torperf/torclient5mb/torrc
+sleep 5
+cd ~/torperf/torclient50kb && python ../extra_stats.py 10020 ~/torperf/50kb.extradata
+cd ~/torperf/torclient1mb && python ../extra_stats.py 10021 ~/torperf/1mb.extradata
+cd ~/torperf/torclient5mb && python ../extra_stats.py 10022 ~/torperf/5mb.extradata
 EOF
 
 $ chmod a+x start-tors
@@ -125,6 +143,27 @@ startsec startusec
   dataresponsesec dataresponseusec
   datacompletesec datacompleteusec
   writebytes readbytes
+
+The 50kb.extradata, 1mb.extradata, and 5mb.extradata files should
+accumulate lines like this (linebreaks for formatting reasons):
+
+ok 1284059486 $ED16C4DD8E9BCACDE829E6B6571B58095383897A=PPrivCom030
+  $80818E35A46DEED6889818ADC596404AB94E392A=Pandora14
+  $4C23C8C30C66C87E1C875A949B4841E4305FFC57~Amunet11
+
+with column headers:
+
+ok|error timestamp firsthop secondhop thirdhop [fourthhop ...]
+
+The first column indicates if this circuit was actually used to fetch
+the data or if Tor chose a different one because this one was
+problematic. For every error entry there should be a following ok
+entry, unless the network of the torperf instance is totally dead or
+the resource it wants to fetch is unavailable.
+
+The timestamp will NOT necessarily match one from the .data file
+exactly, because additional processing is necessary. You should allow
+for up to a minute of slack when matching the two files up.
 
 If everything works, you might want to let your system start these Tor
 clients on system startup. On Debian, this can be done using a crontab
