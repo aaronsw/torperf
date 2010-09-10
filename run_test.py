@@ -2,7 +2,6 @@
 
 ### Copyright 2007 Steven J. Murdoch
 ### See LICENSE for licensing information
-### $Id$
 
 import os
 import time

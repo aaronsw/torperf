@@ -31,7 +31,7 @@ own files instead.
 
 Check out and build torperf:
 
-$ svn co https://svn.torproject.org/svn/torperf/trunk ~/torperf
+$ git clone git://git.torproject.org/torperf ~/torperf
 $ cd ~/torperf
 $ make
 

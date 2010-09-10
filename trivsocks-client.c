@@ -1,7 +1,6 @@
 /* Copyright 2004-2007 Roger Dingledine, Nick Mathewson */
 /* Copyright 2007 Roger Dingledine, Nick Mathewson, Steven J. Murdoch */
 /* See LICENSE for licensing information */
-/* $Id$ */
 
 #include "util.h"
 

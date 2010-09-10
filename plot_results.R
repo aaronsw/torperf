@@ -1,6 +1,5 @@
 ### Copyright 2007 Steven J. Murdoch
 ### See LICENSE for licensing information
-### $Id$
 
 UFACTOR = 1e6
 
