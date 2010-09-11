@@ -10,9 +10,10 @@ class WriteStats(TorCtl.PostEventListener):
     self._filename = filename
     self._conn = None
 
-
   def connect(self):
     self._conn = TorCtl.connect(HOST, self._port)
+    if not self._conn
+      sys.exit(2)
 
   def setup_listener(self):
     self._conn.set_events(["Stream"])
