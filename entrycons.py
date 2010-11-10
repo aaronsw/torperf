@@ -2,6 +2,7 @@
 import sys, time
 import TorCtl.TorCtl as TorCtl
 import TorCtl.TorUtil as TorUtil
+import copy
 
 HOST = "127.0.0.1"
 
@@ -10,9 +11,9 @@ SAMPLE_SIZE = 3
 class EntryTracker(TorCtl.ConsensusTracker):
   used_entries = []
 
-  def __init__(self, conn, slow):
+  def __init__(self, conn, speed):
     TorCtl.ConsensusTracker.__init__(self, conn, consensus_only=False)
-    self._slow = slow
+    self.speed = speed
     self.set_entries()
 
   def new_consensus_event(self, n):
@@ -44,9 +45,37 @@ class EntryTracker(TorCtl.ConsensusTracker):
                      "is not in nodes_list! Mysterioush!")
         TorUtil.plog("INFO", "It was: " + event.nick + " : " + event.idhex)
 
+  def sort_routers(self, sorted_routers):
+    routers = copy.copy(sorted_routers)
+    def ratio_cmp(r1, r2):
+      if r1.bw/float(r1.desc_bw) > r2.bw/float(r2.desc_bw):
+        return -1
+      elif r1.bw/float(r1.desc_bw) < r2.bw/float(r2.desc_bw):
+        return 1
+      else:
+        return 0
+
+    if self.speed == "fast":
+      pass # no action needed
+    elif self.speed == "slow":
+      routers.reverse()
+    elif self.speed == "fastratio":
+      routers.sort(ratio_cmp)
+    elif self.speed == "slowratio":
+      routers.sort(lambda x,y: ratio_cmp(y,x))
+
+    # Print top 5 routers + ratios
+    for i in xrange(5):
+      TorUtil.plog("DEBUG", self.speed+" router "+routers[i].nickname+" #"+str(i)+": "
+                    +str(routers[i].bw)+"/"+str(routers[i].desc_bw)+" = "
+                    +str(routers[i].bw/float(routers[i].desc_bw)))
+
+    return routers
+
   def get_next_router(self, event, nodes_list):
-    cons = self.current_consensus()
-    sorted_routers = cons.sorted_r
+    # XXX: This is inefficient, but if we do it now, we're sure that
+    # we're always using the very latest networkstatus and descriptor data
+    sorted_routers = self.sort_routers(self.current_consensus().sorted_r)
 
     i = 0
     while (1):
@@ -58,49 +87,43 @@ class EntryTracker(TorCtl.ConsensusTracker):
       i += 1
 
   def set_entries(self):
-    sorted_routers = self.sorted_r
+    # XXX: This is inefficient, but if we do it now, we're sure that
+    # we're always using the very latest networkstatus and descriptor data
+    sorted_routers = self.sort_routers(self.current_consensus().sorted_r)
 
-    if (not self._slow):
-      fast_entry_nodes = []
-      for i in xrange(len(sorted_routers)):
-        if len(fast_entry_nodes) >= SAMPLE_SIZE: break
-        if (not sorted_routers[i].down and "Guard" in sorted_routers[i].flags):
-          fast_entry_nodes.append(sorted_routers[i].idhex)
-          self.used_entries.append(sorted_routers[i].idhex)
-      self.c.set_option("EntryNodes", ",".join(fast_entry_nodes))
-    else:
-      sorted_routers.reverse()
-      slow_entry_nodes = []
-      for i in xrange(len(sorted_routers)):
-        if len(slow_entry_nodes) >= SAMPLE_SIZE: break
-        if (not sorted_routers[i].down and "Guard" in sorted_routers[i].flags):
-          slow_entry_nodes.append(sorted_routers[i].idhex)
-          self.used_entries.append(sorted_routers[i].idhex)
-      self.c.set_option("EntryNodes", ",".join(slow_entry_nodes))
+    entry_nodes = []
+    for i in xrange(len(sorted_routers)):
+      if len(entry_nodes) >= SAMPLE_SIZE: break
+      if (not sorted_routers[i].down and "Guard" in sorted_routers[i].flags):
+        entry_nodes.append(sorted_routers[i].idhex)
+        self.used_entries.append(sorted_routers[i].idhex)
+    self.c.set_option("EntryNodes", ",".join(entry_nodes))
+    TorUtil.plog("NOTICE", self.speed+": Changed EntryNodes to: " +
+                   ",".join(map(lambda x: self.ns_map[x].nickname+"="+x,
+                                entry_nodes)))
 
-    if (not self._slow):
-      TorUtil.plog("NOTICE", "Changed EntryNodes to: " +
-                   ",".join(map(lambda x: self.ns_map[x].nickname+"="+x,
-                                fast_entry_nodes)))
-    else:
-      TorUtil.plog("NOTICE", "SLOW: Changed EntryNodes to: " +
-                   ",".join(map(lambda x: self.ns_map[x].nickname+"="+x,
-                                slow_entry_nodes)))
+def usage():
+  print "Usage: "+sys.argv[0]+" <Tor control port> <fast|slow|fastratio|slowratio>"
 
 def main():
+  if len(sys.argv) < 3:
+    usage()
+    return
 
   port = int(sys.argv[1])
   speed = sys.argv[2]
-  
-  if not speed in ("fast", "slow"):
-    TorUtil.plot("ERROR", "Second parameter must be 'fast' or 'slow'");
+
+  if not speed in ("fast", "slow", "fastratio", "slowratio"):
+    TorUtil.plog("ERROR",
+        "Second parameter must be 'fast', 'slow', 'fastratio', or 'slowratio'")
+    return
 
   conn = TorCtl.connect(HOST, port)
 
   conn.set_events(["NEWCONSENSUS", "NEWDESC", "NS", "GUARD"])
   conn.set_option("StrictEntryNodes", "1")
 
-  EntryTracker(conn, speed == "slow")
+  EntryTracker(conn, speed)
   conn.block_until_close()
 
 if __name__ == '__main__':
