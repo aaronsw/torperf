@@ -74,7 +74,7 @@ CookieAuthentication 1
 EOF
 
 ControlPort is configured so that we can attach a small controller
-that is used to write additional statistics about the chosen paths
+that is used to write additional statistics about the chosen paths.
 
 Now we need to get TorCtl:
 
@@ -89,9 +89,9 @@ cd ~/torperf/torclient50kb && tor -f ~/torperf/torclient50kb/torrc
 cd ~/torperf/torclient1mb && tor -f ~/torperf/torclient1mb/torrc
 cd ~/torperf/torclient5mb && tor -f ~/torperf/torclient5mb/torrc
 sleep 5
-cd ~/torperf/torclient50kb && python ../extra_stats.py 10020 ~/torperf/50kb.extradata
-cd ~/torperf/torclient1mb && python ../extra_stats.py 10021 ~/torperf/1mb.extradata
-cd ~/torperf/torclient5mb && python ../extra_stats.py 10022 ~/torperf/5mb.extradata
+cd ~/torperf/torclient50kb && python ../extra_stats.py 10020 ../50kb.extradata
+cd ~/torperf/torclient1mb && python ../extra_stats.py 10021 ../1mb.extradata
+cd ~/torperf/torclient5mb && python ../extra_stats.py 10022 ../5mb.extradata
 EOF
 
 $ chmod a+x start-tors
@@ -156,14 +156,17 @@ with column headers:
 ok|error timestamp firsthop secondhop thirdhop [fourthhop ...]
 
 The first column indicates if this circuit was actually used to fetch
-the data or if Tor chose a different one because this one was
+the data or if Tor chose a different circuit because this one was
 problematic. For every error entry there should be a following ok
 entry, unless the network of the torperf instance is totally dead or
 the resource it wants to fetch is unavailable.
 
-The timestamp will NOT necessarily match one from the .data file
+The timestamp will NOT necessarily match the timestamps in the .data file
 exactly, because additional processing is necessary. You should allow
 for up to a minute of slack when matching the two files up.
+
+Relays are written as $fingerprint=nickname for Named relays and as
+$fingerprint~nickname for relays without the Named flag.
 
 If everything works, you might want to let your system start these Tor
 clients on system startup. On Debian, this can be done using a crontab

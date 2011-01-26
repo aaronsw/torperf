@@ -22,7 +22,7 @@ class WriteStats(TorCtl.PostEventListener):
   def stream_status_event(self, event):
     if event.source == 'EXIT' or \
        event.status == 'DETACHED':
-      for circs in self._conn.get_info( "circuit-status").itervalues():
+      for circs in self._conn.get_info("circuit-status").itervalues():
         for circ in circs.split("\n"):
           entry = circ.split(" ")
           if entry[0] == str(event.circ_id):
