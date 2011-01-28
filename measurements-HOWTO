@@ -89,9 +89,9 @@ cd ~/torperf/torclient50kb && tor -f ~/torperf/torclient50kb/torrc
 cd ~/torperf/torclient1mb && tor -f ~/torperf/torclient1mb/torrc
 cd ~/torperf/torclient5mb && tor -f ~/torperf/torclient5mb/torrc
 sleep 5
-cd ~/torperf/torclient50kb && python ../extra_stats.py 10020 ../50kb.extradata
-cd ~/torperf/torclient1mb && python ../extra_stats.py 10021 ../1mb.extradata
-cd ~/torperf/torclient5mb && python ../extra_stats.py 10022 ../5mb.extradata
+cd ~/torperf/torclient50kb && python ../extra_stats.py 10020 ../50kb.extradata &
+cd ~/torperf/torclient1mb && python ../extra_stats.py 10021 ../1mb.extradata &
+cd ~/torperf/torclient5mb && python ../extra_stats.py 10022 ../5mb.extradata &
 EOF
 
 $ chmod a+x start-tors
@@ -175,4 +175,27 @@ entry, too:
 $ crontab -e
 
 @reboot ~/torperf/start-tors 2>/dev/null
+
+Additionally, it is possible to attach a controller script that makes
+the Tor client select its guards in specific ways. This can help
+answer questions about the influence of guard nodes choices on the
+overall performance of a Tor client.
+
+The entrycons.py script provides that functionality. It will make Tor
+choose guards from set of the absolute fastest, absolute  slowest,
+best rated vs advertised ratio or worst rated vs advertised ratio
+nodes. The ratio mechanisms provide a way to select the nodes that
+the bandwidth authorities think stand out in their measurement.
+
+Put together with a Tor that picks guards randomly, this allows five
+different modes of operation for comparison.
+
+To use this, you will want to run 15 Tor instances: 50kb, 1mb, 5mb
+for the slow, fast, slowratio, fastratio, regular cases. You can
+add a line like this to your start-tors script for each tor instance:
+
+cd ~/torperf/DATADIR && python ../entrycons.py CONTROLPORT SPEED >> LOGFILE &
+
+Remember that for the regular case, you don't need extra entrycons.py
+calls.
 
