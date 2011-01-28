@@ -163,7 +163,12 @@ the resource it wants to fetch is unavailable.
 
 The timestamp will NOT necessarily match the timestamps in the .data file
 exactly, because additional processing is necessary. You should allow
-for up to a minute of slack when matching the two files up.
+for up to a minute of slack when matching the two files up. See the
+consolidate_stats.py script that fulfills this job.
+
+Call it like this:
+
+$ ~/torperf/consolidate-stats DATAFILE EXTRADATAFILE OUTFILE SLACK
 
 Relays are written as $fingerprint=nickname for Named relays and as
 $fingerprint~nickname for relays without the Named flag.
