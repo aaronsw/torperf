@@ -1,0 +1,77 @@
+#!/bin/bash
+cd ~/torperf
+
+mkdir -p slow50kb slow1mb slow5mb slowratio50kb slowratio1mb slowratio5mb
+mkdir -p fast50kb fast1mb fast5mb fastratio50kb fastratio1mb fastratio5mb
+mkdir -p regular50kb regular1mb regular5mb
+
+BASEPORT=9000
+SIZENUM=0
+for SIZE in 50kb 1mb 5mb; do
+SPEEDNUM=0
+let SIZENUM=10+$SIZENUM
+for SPEED in slow slowratio regular fast fastratio; do
+let SPEEDNUM=1+$SPEEDNUM
+let PORT=$BASEPORT+$SIZENUM+$SPEEDNUM
+let CONTROLPORT=1000+$PORT
+cd ~/torperf/$SPEED$SIZE
+cat <<EOF >torrc
+DataDirectory .
+SocksPort $PORT
+MaxCircuitDirtiness 1 minute
+RunAsDaemon 1
+Log notice file log
+ControlPort $CONTROLPORT
+CookieAuthentication 1
+EOF
+done
+done
+
+cd ~/torperf/slow50kb && tor -f ~/torperf/slow50kb/torrc
+cd ~/torperf/slow1mb && tor -f ~/torperf/slow1mb/torrc
+cd ~/torperf/slow5mb && tor -f ~/torperf/slow5mb/torrc
+cd ~/torperf/slowratio50kb && tor -f ~/torperf/slowratio50kb/torrc
+cd ~/torperf/slowratio1mb && tor -f ~/torperf/slowratio1mb/torrc
+cd ~/torperf/slowratio5mb && tor -f ~/torperf/slowratio5mb/torrc
+cd ~/torperf/regular50kb && tor -f ~/torperf/regular50kb/torrc
+cd ~/torperf/regular1mb && tor -f ~/torperf/regular1mb/torrc
+cd ~/torperf/regular5mb && tor -f ~/torperf/regular5mb/torrc
+cd ~/torperf/fast50kb && tor -f ~/torperf/fast50kb/torrc
+cd ~/torperf/fast1mb && tor -f ~/torperf/fast1mb/torrc
+cd ~/torperf/fast5mb && tor -f ~/torperf/fast5mb/torrc
+cd ~/torperf/fastratio50kb && tor -f ~/torperf/fastratio50kb/torrc
+cd ~/torperf/fastratio1mb && tor -f ~/torperf/fastratio1mb/torrc
+cd ~/torperf/fastratio5mb && tor -f ~/torperf/fastratio5mb/torrc
+
+sleep 5
+
+cd ~/torperf/slow50kb && python ../extra_stats.py 10011 ../slow50kb.extradata &
+cd ~/torperf/slow1mb && python ../extra_stats.py 10021 ../slow1mb.extradata &
+cd ~/torperf/slow5mb && python ../extra_stats.py 10031 ../slow5mb.extradata &
+cd ~/torperf/slowratio50kb && python ../extra_stats.py 10012 ../slowratio50kb.extradata &
+cd ~/torperf/slowratio1mb && python ../extra_stats.py 10022 ../slowratio1mb.extradata &
+cd ~/torperf/slowratio5mb && python ../extra_stats.py 10032 ../slowratio5mb.extradata &
+cd ~/torperf/regular50kb && python ../extra_stats.py 10013 ../regular50kb.extradata &
+cd ~/torperf/regular1mb && python ../extra_stats.py 10023 ../regular1mb.extradata &
+cd ~/torperf/regular5mb && python ../extra_stats.py 10033 ../regular5mb.extradata &
+cd ~/torperf/fast50kb && python ../extra_stats.py 10014 ../fast50kb.extradata &
+cd ~/torperf/fast1mb && python ../extra_stats.py 10024 ../fast1mb.extradata &
+cd ~/torperf/fast5mb && python ../extra_stats.py 10034 ../fast5mb.extradata &
+cd ~/torperf/fastratio50kb && python ../extra_stats.py 10015 ../fastratio50kb.extradata &
+cd ~/torperf/fastratio1mb && python ../extra_stats.py 10025 ../fastratio1mb.extradata &
+cd ~/torperf/fastratio5mb && python ../extra_stats.py 10035 ../fastratio5mb.extradata &
+
+sleep 5
+
+cd ~/torperf/slow50kb && python ../entrycons.py 10011 slow >> entrycons_log &
+cd ~/torperf/slow1mb && python ../entrycons.py 10021 slow >> entrycons_log &
+cd ~/torperf/slow5mb && python ../entrycons.py 10031 slow >> entrycons_log &
+cd ~/torperf/slowratio50kb && python ../entrycons.py 10012 slowratio >> entrycons_log &
+cd ~/torperf/slowratio1mb && python ../entrycons.py 10022 slowratio >> entrycons_log &
+cd ~/torperf/slowratio5mb && python ../entrycons.py 10032 slowratio >> entrycons_log &
+cd ~/torperf/fast50kb && python ../entrycons.py 10014 fast >> entrycons_log &
+cd ~/torperf/fast1mb && python ../entrycons.py 10024 fast >> entrycons_log &
+cd ~/torperf/fast5mb && python ../entrycons.py 10034 fast >> entrycons_log &
+cd ~/torperf/fastratio50kb && python ../entrycons.py 10015 fastratio >> entrycons_log &
+cd ~/torperf/fastratio1mb && python ../entrycons.py 10025 fastratio >> entrycons_log &
+cd ~/torperf/fastratio5mb && python ../entrycons.py 10035 fastratio >> entrycons_log &

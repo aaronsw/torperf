@@ -204,3 +204,6 @@ cd ~/torperf/DATADIR && python ../entrycons.py CONTROLPORT SPEED >> LOGFILE &
 Remember that for the regular case, you don't need extra entrycons.py
 calls.
 
+Check out the example_start-tors_fastslow.txt file for how that setup
+might look.
+
