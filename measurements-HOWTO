@@ -7,7 +7,9 @@ evaluate progress in improving Tor's performance, we need to continuously
 measure how fast Tor really is for our users. The primary purpose of these
 measurements is to compare how performance evolves over time. This howto
 uses a trivial SOCKS client to download files of various sizes over the Tor
-network and write down how long substeps take.
+network and write down how long substeps take. This setup can be extended
+by Tor controllers that log which circuits were used and controllers that
+influence guard node selection.
 
 The following configuration parameters are used:
 
@@ -18,6 +20,17 @@ The following configuration parameters are used:
 - 5 MB file, downloaded every 60 minutes, timeout of 59:55 minutes, default
   MaxCircuitDirtiness of 10 minutes, SOCKS port 9022, no entry guards
 
+This document explains:
+
+  1) how to setup Torperf to measure download times and a Tor controller
+     to log which circuits were used and
+  2) how to attach another Tor controller to influence guard node
+     selection.
+
+
+1  Setting up Torperf to log download times and circuits
+--------------------------------------------------------
+
 Create sample files of correct sizes and make them available somewhere via
 http:
 
@@ -25,7 +38,7 @@ $ dd if=/dev/urandom of=.50kbfile count=1 bs=50K
 $ dd if=/dev/urandom of=.1mbfile count=1 bs=1M
 $ dd if=/dev/urandom of=.5mbfile count=1 bs=5M
 
-These files are available as http://torperf.torproject.org/.50kbfile (and
+These files are available at http://torperf.torproject.org/.50kbfile (and
 the other two file names). You may use these files, or you can use your
 own files instead.
 
@@ -73,15 +86,16 @@ ControlPort 10022
 CookieAuthentication 1
 EOF
 
-ControlPort is configured so that we can attach a small controller
-that is used to write additional statistics about the chosen paths.
+ControlPort and CookieAuthentication are configured so that we can attach
+controllers to write additional statistics about the chosen paths (and
+possibly influence guard node selection as described below).
 
 Now we need to get TorCtl:
 
 $ git clone git://git.torproject.org/pytorctl TorCtl
 
 Write a start script to start the Tor clients and the controllers,
-and execute it:
+and execute it (line breaks are only for formatting purposes here):
 
 $ cat <<EOF >> start-tors
 #!/bin/bash
@@ -89,9 +103,12 @@ cd ~/torperf/torclient50kb && tor -f ~/torperf/torclient50kb/torrc
 cd ~/torperf/torclient1mb && tor -f ~/torperf/torclient1mb/torrc
 cd ~/torperf/torclient5mb && tor -f ~/torperf/torclient5mb/torrc
 sleep 5
-cd ~/torperf/torclient50kb && python ../extra_stats.py 10020 ../50kb.extradata &
-cd ~/torperf/torclient1mb && python ../extra_stats.py 10021 ../1mb.extradata &
-cd ~/torperf/torclient5mb && python ../extra_stats.py 10022 ../5mb.extradata &
+cd ~/torperf/torclient50kb && python ../extra_stats.py 10020
+  ../50kb.extradata &
+cd ~/torperf/torclient1mb && python ../extra_stats.py 10021
+  ../1mb.extradata &
+cd ~/torperf/torclient5mb && python ../extra_stats.py 10022
+  ../5mb.extradata &
 EOF
 
 $ chmod a+x start-tors
@@ -101,8 +118,8 @@ Install the timeout tool:
 
 $ sudo apt-get install timeout
 
-Add crontab entries to start the regular requests (line breaks are only for
-formatting purposes here):
+Add crontab entries to start the regular requests (line breaks are only
+for formatting purposes here):
 
 $ crontab -e
 
@@ -181,14 +198,18 @@ $ crontab -e
 
 @reboot ~/torperf/start-tors 2>/dev/null
 
-Additionally, it is possible to attach a controller script that makes
-the Tor client select its guards in specific ways. This can help
-answer questions about the influence of guard nodes choices on the
-overall performance of a Tor client.
+
+2  Setting up Torperf with modified guard node selection
+--------------------------------------------------------
+
+Instead of using a vanilla Tor client, it is possible to attach a Tor
+controller that makes the Tor client select its guards in specific ways.
+This can help answer questions about the influence of guard nodes choices
+on the overall performance of a Tor client.
 
 The entrycons.py script provides that functionality. It will make Tor
-choose guards from set of the absolute fastest, absolute  slowest,
-best rated vs advertised ratio or worst rated vs advertised ratio
+choose guards from sets of the a) absolute fastest, b) absolute slowest,
+c) best rated vs. advertised ratio or d) worst rated vs. advertised ratio
 nodes. The ratio mechanisms provide a way to select the nodes that
 the bandwidth authorities think stand out in their measurement.
 
@@ -197,9 +218,11 @@ different modes of operation for comparison.
 
 To use this, you will want to run 15 Tor instances: 50kb, 1mb, 5mb
 for the slow, fast, slowratio, fastratio, regular cases. You can
-add a line like this to your start-tors script for each tor instance:
+add a line like this to your start-tors script for each tor instance
+(linebreak for formatting reasons):
 
-cd ~/torperf/DATADIR && python ../entrycons.py CONTROLPORT SPEED >> LOGFILE &
+cd ~/torperf/DATADIR && python ../entrycons.py CONTROLPORT SPEED
+  >> LOGFILE &
 
 Remember that for the regular case, you don't need extra entrycons.py
 calls.
