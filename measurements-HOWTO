@@ -230,3 +230,45 @@ calls.
 Check out the example_start-tors_fastslow.txt file for how that setup
 might look.
 
+Don't forget to add twelve entries to your crontab in addition to the
+three entries above (linebreaks for formatting reasons):
+
+1,6,11,16,21,26,31,36,41,46,51,56 * * * * timeout -2 295
+  ~/torperf/trivsocks-client torperf.torproject.org 127.0.0.1:9023
+  /.50kbfile >> ~/torperf/slow50kb.data 2>/dev/null
+2,7,12,17,22,27,32,37,42,47,52,57 * * * * timeout -2 295
+  ~/torperf/trivsocks-client torperf.torproject.org 127.0.0.1:9026
+  /.50kbfile >> ~/torperf/slowratio50kb.data 2>/dev/null
+3,8,13,18,23,28,33,38,43,48,53,58 * * * * timeout -2 295
+  ~/torperf/trivsocks-client torperf.torproject.org 127.0.0.1:9029
+  /.50kbfile >> ~/torperf/fast50kb.data 2>/dev/null
+4,9,14,19,24,29,34,39,44,49,54,59 * * * * timeout -2 295
+  ~/torperf/trivsocks-client torperf.torproject.org 127.0.0.1:9032
+  /.50kbfile >> ~/torperf/fastratio50kb.data 2>/dev/null
+
+8,38 * * * * timeout -2 1795 ~/torperf/trivsocks-client
+  torperf.torproject.org 127.0.0.1:9024 /.1mbfile >>
+  ~/torperf/slow1mb.data 2>/dev/null
+14,44 * * * * timeout -2 1795 ~/torperf/trivsocks-client
+  torperf.torproject.org 127.0.0.1:9027 /.1mbfile >>
+  ~/torperf/slowratio1mb.data 2>/dev/null
+20,50 * * * * timeout -2 1795 ~/torperf/trivsocks-client
+  torperf.torproject.org 127.0.0.1:9030 /.1mbfile >>
+  ~/torperf/fast1mb.data 2>/dev/null
+26,56 * * * * timeout -2 1795 ~/torperf/trivsocks-client
+  torperf.torproject.org 127.0.0.1:9033 /.1mbfile >>
+  ~/torperf/fastratio1mb.data 2>/dev/null
+
+20 * * * * timeout -2 3595 ~/torperf/trivsocks-client
+  torperf.torproject.org 127.0.0.1:9025 /.5mbfile >>
+  ~/torperf/slow5mb.data 2>/dev/null
+32 * * * * timeout -2 3595 ~/torperf/trivsocks-client
+  torperf.torproject.org 127.0.0.1:9028 /.5mbfile >>
+  ~/torperf/slowratio5mb.data 2>/dev/null
+44 * * * * timeout -2 3595 ~/torperf/trivsocks-client
+  torperf.torproject.org 127.0.0.1:9031 /.5mbfile >>
+  ~/torperf/fast5mb.data 2>/dev/null
+56 * * * * timeout -2 3595 ~/torperf/trivsocks-client
+  torperf.torproject.org 127.0.0.1:9034 /.5mbfile >>
+  ~/torperf/fastratio5mb.data 2>/dev/null
+
