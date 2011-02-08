@@ -116,7 +116,8 @@ $ ./start-tors
 
 Install the timeout tool:
 
-$ sudo apt-get install timeout
+$ sudo apt-get install timeout     # Lenny
+$ sudo apt-get install coreutils   # Squeeze
 
 Add crontab entries to start the regular requests (line breaks are only
 for formatting purposes here):
