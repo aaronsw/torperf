@@ -12,7 +12,7 @@ class WriteStats(TorCtl.PostEventListener):
 
   def connect(self):
     self._conn = TorCtl.connect(HOST, self._port)
-    if not self._conn
+    if not self._conn:
       sys.exit(2)
 
   def setup_listener(self):
