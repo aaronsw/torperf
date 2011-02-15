@@ -122,6 +122,7 @@ def main():
 
   conn.set_events(["NEWCONSENSUS", "NEWDESC", "NS", "GUARD"])
   conn.set_option("StrictEntryNodes", "1")
+  conn.set_option("UseEntryNodes", "1")
 
   EntryTracker(conn, speed)
   conn.block_until_close()
