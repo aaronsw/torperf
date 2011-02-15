@@ -63,15 +63,15 @@ cd ~/torperf/fastratio5mb && python ../extra_stats.py 10035 ../fastratio5mb.extr
 
 sleep 5
 
-cd ~/torperf/slow50kb && python ../entrycons.py 10011 slow >> entrycons_log &
-cd ~/torperf/slow1mb && python ../entrycons.py 10021 slow >> entrycons_log &
-cd ~/torperf/slow5mb && python ../entrycons.py 10031 slow >> entrycons_log &
-cd ~/torperf/slowratio50kb && python ../entrycons.py 10012 slowratio >> entrycons_log &
-cd ~/torperf/slowratio1mb && python ../entrycons.py 10022 slowratio >> entrycons_log &
-cd ~/torperf/slowratio5mb && python ../entrycons.py 10032 slowratio >> entrycons_log &
-cd ~/torperf/fast50kb && python ../entrycons.py 10014 fast >> entrycons_log &
-cd ~/torperf/fast1mb && python ../entrycons.py 10024 fast >> entrycons_log &
-cd ~/torperf/fast5mb && python ../entrycons.py 10034 fast >> entrycons_log &
-cd ~/torperf/fastratio50kb && python ../entrycons.py 10015 fastratio >> entrycons_log &
-cd ~/torperf/fastratio1mb && python ../entrycons.py 10025 fastratio >> entrycons_log &
-cd ~/torperf/fastratio5mb && python ../entrycons.py 10035 fastratio >> entrycons_log &
+cd ~/torperf/slow50kb && python ../entrycons.py 10011 slow >> entrycons_log 2>&1 &
+cd ~/torperf/slow1mb && python ../entrycons.py 10021 slow >> entrycons_log 2>&1 &
+cd ~/torperf/slow5mb && python ../entrycons.py 10031 slow >> entrycons_log 2>&1 &
+cd ~/torperf/slowratio50kb && python ../entrycons.py 10012 slowratio >> entrycons_log 2>&1 &
+cd ~/torperf/slowratio1mb && python ../entrycons.py 10022 slowratio >> entrycons_log 2>&1 &
+cd ~/torperf/slowratio5mb && python ../entrycons.py 10032 slowratio >> entrycons_log 2>&1 &
+cd ~/torperf/fast50kb && python ../entrycons.py 10014 fast >> entrycons_log 2>&1 &
+cd ~/torperf/fast1mb && python ../entrycons.py 10024 fast >> entrycons_log 2>&1 &
+cd ~/torperf/fast5mb && python ../entrycons.py 10034 fast >> entrycons_log 2>&1 &
+cd ~/torperf/fastratio50kb && python ../entrycons.py 10015 fastratio >> entrycons_log 2>&1 &
+cd ~/torperf/fastratio1mb && python ../entrycons.py 10025 fastratio >> entrycons_log 2>&1 &
+cd ~/torperf/fastratio5mb && python ../entrycons.py 10035 fastratio >> entrycons_log 2>&1 &
