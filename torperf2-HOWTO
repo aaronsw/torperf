@@ -1,0 +1,8 @@
+Add this to your crontab:
+
+*/5 * * * * timeout -2 295 ~/torperf/torperf2.py 50kbfile
+2,32 * * * * timeout -2 1795 ~/torperf/torperf2.py 1mbfile
+8 * * * * timeout -2 3595 ~/torperf/torperf2.py 5mbfile
+
+This will request various files and varying intervals and store the results 
+in ~/torperf/torperf2.log.

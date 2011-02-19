@@ -1,4 +1,5 @@
-import socket, sys, time, subprocess, threading, signal, fcntl
+#!/usr/bin/env python
+import socket, sys, time, subprocess, threading, signal, fcntl, os
 import TorCtl.TorCtl
 
 LOGFILE = 'torperf2.log'
@@ -21,6 +22,11 @@ RunAsDaemon 0
 Log info file logfile
 DataDir .tor
 """ % (HOST, PORT, PORT+1)
+
+def nukedir(dirname):
+    for fn in os.listdir(dirname):
+        os.unlink(dirname + os.path.sep + fn)
+    os.rmdir(dirname)
 
 def start_tor():
     global TORPROCESS
@@ -100,13 +106,17 @@ def main(host, port, fn, fh):
     shared['torlock'].acquire()
 
     grab_page(handler, HIDDEN + fn, 'hidden|%s|cold'%fn)
-    grab_page(handler, HIDDEN + fn, 'hidden|%s|warm'%fn)
+    if fn == '50kbfile':
+        grab_page(handler, HIDDEN + fn, 'hidden|%s|warm'%fn)
     grab_page(handler, PUBLIC + fn, 'public|%s|cold'%fn)
-    grab_page(handler, HIDDEN + fn, 'hidden|%s|lukewarm'%fn)
+    if fn == '50kbfile':
+        grab_page(handler, HIDDEN + fn, 'hidden|%s|lukewarm'%fn)
     handler.log('END_TOR')
 
 if __name__ == "__main__":
     try:
+        os.chdir(os.path.sep.join(sys.argv[0].split(os.path.sep)[:-1]))
+        nukedir('.tor')
         fh = file(LOGFILE, 'a')
         fcntl.lockf(fh, fcntl.LOCK_EX)
         main(HOST, PORT, sys.argv[1], fh)
