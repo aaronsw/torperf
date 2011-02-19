@@ -100,7 +100,7 @@ def main(host, port, fn, fh):
     shared['torlock'].acquire()
 
     grab_page(handler, HIDDEN + fn, 'hidden|%s|cold'%fn)
-    grab_page(handler, HIDDEN + fn, 'hidden|%s|warn'%fn)
+    grab_page(handler, HIDDEN + fn, 'hidden|%s|warm'%fn)
     grab_page(handler, PUBLIC + fn, 'public|%s|cold'%fn)
     grab_page(handler, HIDDEN + fn, 'hidden|%s|lukewarm'%fn)
     handler.log('END_TOR')
