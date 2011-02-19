@@ -49,6 +49,9 @@ class EventHandler(TorCtl.TorCtl.DebugEventHandler):
         self.last_event = None
         TorCtl.TorCtl.DebugEventHandler.__init__(self)
     
+    def declare(self, declaration):
+        print declaration
+    
     def log(self, event):
         now = time.time()
         print now, event,
@@ -65,10 +68,12 @@ class EventHandler(TorCtl.TorCtl.DebugEventHandler):
                 if k == 'GOT_TOR': shared['torlock'].release()
                 break
 
-def grab_page(h):
+def grab_page(h, u):
+    h.last_event = None
+    h.declare('GET %s' % u)
     h.log('START_REQUEST')
     p = subprocess.Popen(['curl', '-sN', '--socks4a', h.host + ':%d' % (h.port-1),
-     'http://duskgytldkxiuqc6.onion/'], bufsize=0, stdout=subprocess.PIPE)
+     u], bufsize=0, stdout=subprocess.PIPE)
     b = ''
     while not b: b = p.stdout.read(1)
     h.log('GOT_FIRST_BYTE')
@@ -88,9 +93,17 @@ def main(host, port):
     c.authenticate()
     EVT = TorCtl.TorCtl.EVENT_TYPE
     c.set_events([EVT.INFO, EVT.NOTICE])
-    
     shared['torlock'].acquire()
-    grab_page(handler)
+
+    grab_page(handler, 'http://pevf7ega6sg6elzr.onion:9081/50kbfile')
+    grab_page(handler, 'http://torperf.tor2web.org:9081/50kbfile')
+    time.sleep(10)
+    grab_page(handler, 'http://pevf7ega6sg6elzr.onion:9081/50kbfile')
+    grab_page(handler, 'http://torperf.tor2web.org:9081/50kbfile')
+    time.sleep(10)
+    grab_page(handler, 'http://pevf7ega6sg6elzr.onion:9081/50kbfile')
+    grab_page(handler, 'http://torperf.tor2web.org:9081/50kbfile')
+    handler.log('END_TOR')
 
 if __name__ == "__main__":
     try:
