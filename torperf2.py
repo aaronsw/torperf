@@ -2,6 +2,9 @@
 import socket, sys, time, subprocess, threading, signal, fcntl, os
 import TorCtl.TorCtl
 
+# TODO: track things on the hidden service side as well
+
+TORLOC = '/usr/sbin/tor'
 LOGFILE = 'torperf2.log'
 HIDDEN = 'http://pevf7ega6sg6elzr.onion:9081/'
 PUBLIC = 'http://torperf.tor2web.org:9081/'
@@ -24,14 +27,15 @@ DataDir .tor
 """ % (HOST, PORT, PORT+1)
 
 def nukedir(dirname):
-    for fn in os.listdir(dirname):
-        os.unlink(dirname + os.path.sep + fn)
-    os.rmdir(dirname)
+    if os.path.exists(dirname):
+        for fn in os.listdir(dirname):
+            os.unlink(dirname + os.path.sep + fn)
+        os.rmdir(dirname)
 
 def start_tor():
     global TORPROCESS
     file('torrc', 'w').write(TORRC)
-    shared['torprocess'] = subprocess.Popen(['tor', '-f', 'torrc'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    shared['torprocess'] = subprocess.Popen([TORLOC, '-f', 'torrc'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     shared['torlock'].acquire()
 
 def end_tor(signum=None, frame=None):
@@ -114,6 +118,7 @@ def main(host, port, fn, fh):
     handler.log('END_TOR')
 
 if __name__ == "__main__":
+    fh = None
     try:
         os.chdir(os.path.sep.join(sys.argv[0].split(os.path.sep)[:-1]))
         nukedir('.tor')
@@ -122,4 +127,4 @@ if __name__ == "__main__":
         main(HOST, PORT, sys.argv[1], fh)
     finally:
         end_tor()
-        fcntl.lockf(fh, fcntl.LOCK_UN)
+        if fh: fcntl.lockf(fh, fcntl.LOCK_UN)
