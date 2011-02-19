@@ -1,7 +1,9 @@
-import socket, sys, time, subprocess, threading, signal
+import socket, sys, time, subprocess, threading, signal, fcntl
 import TorCtl.TorCtl
 
-debug = sys.stderr
+LOGFILE = 'torperf2.log'
+HIDDEN = 'http://pevf7ega6sg6elzr.onion:9081/'
+PUBLIC = 'http://torperf.tor2web.org:9081/'
 HOST = '127.0.0.1'
 PORT = 10951
 
@@ -27,7 +29,7 @@ def start_tor():
     shared['torlock'].acquire()
 
 def end_tor(signum=None, frame=None):
-    shared['torprocess'].kill()
+    if shared['torprocess']: shared['torprocess'].kill()
 signal.signal(signal.SIGTERM, end_tor)
 
 triggers = dict(
@@ -43,22 +45,24 @@ triggers = dict(
 )
 
 class EventHandler(TorCtl.TorCtl.DebugEventHandler):
-    def __init__(self, host, port):
+    def __init__(self, host, port, fh):
         self.host = host
         self.port = port
+        self.fh = fh
         self.last_event = None
         TorCtl.TorCtl.DebugEventHandler.__init__(self)
     
     def declare(self, declaration):
-        print declaration
+        self.fh.write(declaration+'\n')
+        self.fh.flush()
     
     def log(self, event):
         now = time.time()
-        print now, event,
+        self.fh.write('%f %s ' % (now, event))
         if self.last_event:
-            print '(%.2f seconds)' % (now-self.last_event)
-        else:
-            print
+            self.fh.write('(%.2f seconds)' % (now-self.last_event))
+        self.fh.write('\n')
+        self.fh.flush()
         self.last_event = now
     
     def msg_event(self, log_event):
@@ -68,12 +72,12 @@ class EventHandler(TorCtl.TorCtl.DebugEventHandler):
                 if k == 'GOT_TOR': shared['torlock'].release()
                 break
 
-def grab_page(h, u):
+def grab_page(h, url, bucket):
     h.last_event = None
-    h.declare('GET %s' % u)
+    h.declare('GET %s %s' % (url, bucket))
     h.log('START_REQUEST')
     p = subprocess.Popen(['curl', '-sN', '--socks4a', h.host + ':%d' % (h.port-1),
-     u], bufsize=0, stdout=subprocess.PIPE)
+     url], bufsize=0, stdout=subprocess.PIPE)
     b = ''
     while not b: b = p.stdout.read(1)
     h.log('GOT_FIRST_BYTE')
@@ -81,8 +85,8 @@ def grab_page(h, u):
     h.log('GOT_LAST_BYTE')
     h.log('END_REQUEST')
 
-def main(host, port):
-    handler = EventHandler(host, port+1)
+def main(host, port, fn, fh):
+    handler = EventHandler(host, port+1, fh)
     handler.log('START_TOR')
     start_tor()
     time.sleep(2)
@@ -95,20 +99,17 @@ def main(host, port):
     c.set_events([EVT.INFO, EVT.NOTICE])
     shared['torlock'].acquire()
 
-    grab_page(handler, 'http://pevf7ega6sg6elzr.onion:9081/50kbfile')
-    grab_page(handler, 'http://torperf.tor2web.org:9081/50kbfile')
-    time.sleep(10)
-    grab_page(handler, 'http://pevf7ega6sg6elzr.onion:9081/50kbfile')
-    grab_page(handler, 'http://torperf.tor2web.org:9081/50kbfile')
-    time.sleep(10)
-    grab_page(handler, 'http://pevf7ega6sg6elzr.onion:9081/50kbfile')
-    grab_page(handler, 'http://torperf.tor2web.org:9081/50kbfile')
+    grab_page(handler, HIDDEN + fn, 'hidden|%s|cold'%fn)
+    grab_page(handler, HIDDEN + fn, 'hidden|%s|warn'%fn)
+    grab_page(handler, PUBLIC + fn, 'public|%s|cold'%fn)
+    grab_page(handler, HIDDEN + fn, 'hidden|%s|lukewarm'%fn)
     handler.log('END_TOR')
 
 if __name__ == "__main__":
     try:
-        main(HOST, PORT)
-    except KeyboardInterrupt:
-        end_tor()
+        fh = file(LOGFILE, 'a')
+        fcntl.lockf(fh, fcntl.LOCK_EX)
+        main(HOST, PORT, sys.argv[1], fh)
     finally:
         end_tor()
+        fcntl.lockf(fh, fcntl.LOCK_UN)
